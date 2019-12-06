@@ -1,6 +1,7 @@
 import socket
 import sys
 import getpass
+import select
 
 try:
   #Address Family IPv4, Sock stream is TCP
@@ -43,14 +44,44 @@ while(auth_ack[0] == '0'):
 	auth_ack = s.recv(1)
 
 #logged in
+#s.setblocking(0)
+numUnread = s.recv(1024)
+print("# of Unread Messages: " + numUnread)
 while(1):
-	#display menu
-	print("Menu\n1. Send Message\n2. Count Unread Message(s)\n3. Read Unread Message(s)\n4. Send Broadcast Messsage\n5. Change Password\n6. Logout\n---------------------------------------------------")
-	#display received messages
-
+    #display menu
+	print("Menu\n1. Send Message\n2. Send Friend Request\n3. Read Unread Message(s)\n4. Send Broadcast Messsage\n5. Change Password\n6. Logout\n---------------------------------------------------")
+	
+	ready = select.select([s], [], [], 3)
+	while(ready[0]):
+		data = s.recv(4096)
+		print(data)
+		ready = select.select([s], [], [], 3)
+	
 	#get user's choice of action
 	option = raw_input("Enter the number for the action: ")
-	if (option == '5'):
+	
+	if (option == '1'): #send message
+		s.sendall("!sendone")
+		receiver = raw_input("Enter receiver: ")
+		s.sendall(receiver)
+		msg = raw_input("Enter message: ")
+		s.sendall(msg)
+		ack = s.recv(1)
+		print("Message sent")
+		
+	elif (option == '2'): #Send Friend Request
+		continue
+	elif (option == '3'): #read unread message
+		s.sendall("!readall")
+		
+		unread_msg = s.recv[4096]
+		print(unread_msg)
+		#while(data[0:2] != '!q' ):
+		#	print(data)
+		#	data = s.recv[4096]
+	elif (option == '4'): #broadcast message to everyone online
+		continue
+	elif (option == '5'):
 		s.sendall("!p")
 		#make sure old_pass is correct
 		old_pwd = getpass.getpass(prompt="Old Password: ")
