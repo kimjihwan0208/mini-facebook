@@ -48,7 +48,7 @@ def clientthread(conn,ip): #each clientthread for each client. lasts until clien
 	
 	print(user + " is now online on ip: " + ip)
 	#logged in
-	conn.sendall(str(len(user_list[user][4]))) #unread count
+	conn.send(str(len(user_list[user][4]))) #unread count
 	while True:
 		data = conn.recv(1024)
 		if data[0:2] == "!q" :
@@ -58,18 +58,19 @@ def clientthread(conn,ip): #each clientthread for each client. lasts until clien
 			send_to = conn.recv(1024)
 			msg = conn.recv(1024)
 			if user_list[send_to][1]:
-				user_list[send_to][3].sendall(msg)
+				user_list[send_to][3].send(msg)
 			else:
 				user_list[send_to][4].append(msg)
-			conn.sendall('1')
+			conn.send('1')
 		
 		elif data[0:8] == "!readall":
-			conn.sendall(user_list[user][4][0])
-			print(user_list[user][4][0])
-			#for i in user_list[user][4]:
-			#	conn.sendall('h')
-			conn.sendall('!q')
-				  
+			while len(user_list[user][4]) != 0:
+				conn.sendall(user_list[user][4][0])
+				print(user_list[user][4][0])
+				user_list[user][4].pop(0)
+
+			conn.sendall('!x')
+	  
 		elif data[0:2] == "!p" :
 			#check old password
 			old_pwd = conn.recv(1024)
@@ -82,10 +83,13 @@ def clientthread(conn,ip): #each clientthread for each client. lasts until clien
 			user_list[user][0] = new_pwd;
 			conn.send('1') #good to go ack
 			
-		elif data[0:9] == "!sendall ":
-		  #for member in client_list:
-		   # member.sendall(reply[9:])
-			continue
+		elif data[0:8] == "!sendall":
+			msg = conn.recv(1024)
+			for u in user_list:
+				if user_list[u][1] and u != user:
+					#print(u)
+					user_list[u][3].send(msg)
+			conn.send('1')
 		else:
 		  #conn.sendall(reply)
 			continue
