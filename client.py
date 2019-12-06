@@ -71,16 +71,22 @@ while(1):
 		
 	elif (option == '2'): #Send Friend Request
 		continue
+		
 	elif (option == '3'): #read unread message
 		s.sendall("!readall")
+		unread_msg = s.recv(1024)
+		while(unread_msg[0:2] != '!x'):
+			print(unread_msg)
+			unread_msg = s.recv(1024)
+		print("-----------\nNo More Unread Messages!")
 		
-		unread_msg = s.recv[4096]
-		print(unread_msg)
-		#while(data[0:2] != '!q' ):
-		#	print(data)
-		#	data = s.recv[4096]
 	elif (option == '4'): #broadcast message to everyone online
-		continue
+		s.sendall("!sendall")
+		msg = raw_input("Enter message: ")
+		s.sendall(msg)
+		ack = s.recv(1)
+		print("Message sent")
+		
 	elif (option == '5'):
 		s.sendall("!p")
 		#make sure old_pass is correct
@@ -101,6 +107,9 @@ while(1):
 	elif (option == '6'):
 		s.sendall("!q")
 		break
+	
+	else:
+		continue
 
 '''
 message = 'hi'
